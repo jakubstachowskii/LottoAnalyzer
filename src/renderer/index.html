@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lotto Analyzer - Analizator wyników Lotto</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1>🎲 Lotto Analyzer</h1>
+                <p>Analizator wyników polskiego Lotto</p>
+            </div>
+            <div class="header-actions">
+                <button id="fetch-data-btn" class="btn btn-primary">
+                    📡 Pobierz najnowsze
+                </button>
+                <button id="import-csv-btn" class="btn btn-secondary">
+                    📁 Import CSV
+                </button>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="app-nav">
+            <button class="nav-btn active" data-tab="dashboard">📊 Dashboard</button>
+            <button class="nav-btn" data-tab="statistics">📈 Statystyki</button>
+            <button class="nav-btn" data-tab="generator">🎯 Generator</button>
+            <button class="nav-btn" data-tab="data">📊 Dane</button>
+            <button class="nav-btn" data-tab="history">📋 Historia</button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="app-main">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <!-- Dashboard Header -->
+                <div class="dashboard-header">
+                    <h2>📊 Panel główny</h2>
+                    <p class="dashboard-subtitle">Przegląd najważniejszych informacji o losowaniach Lotto</p>
+                </div>
+
+                <!-- Key Metrics -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-icon">📊</div>
+                        <div class="metric-content">
+                            <h4>Łączna liczba losowań</h4>
+                            <div class="metric-value" id="total-draws-metric">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-icon">🎯</div>
+                        <div class="metric-content">
+                            <h4>Ostatnie losowanie</h4>
+                            <div class="metric-value" id="last-draw-date-metric">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-icon">💰</div>
+                        <div class="metric-content">
+                            <h4>Aktualny jackpot</h4>
+                            <div class="metric-value" id="current-jackpot-metric">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-icon">👥</div>
+                        <div class="metric-content">
+                            <h4>Ostatni zwycięzca</h4>
+                            <div class="metric-value" id="last-winners-metric">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Dashboard Content -->
+                <div class="dashboard-grid">
+                    <!-- Latest Draw Section -->
+                    <div class="card latest-draw-card">
+                        <div class="card-header">
+                            <h3>🎲 Ostatnie losowanie</h3>
+                            <span class="card-badge" id="draw-number-badge">#-</span>
+                        </div>
+                        <div class="latest-draw-content" id="latest-draw-content">
+                            <div class="loading">Ładowanie danych...</div>
+                        </div>
+                    </div>
+
+                    <!-- Hot Numbers Section -->
+                    <div class="card hot-numbers-card">
+                        <div class="card-header">
+                            <h3>🔥 Najczęściej losowane</h3>
+                            <span class="card-subtitle">Top 10 liczb</span>
+                        </div>
+                        <div class="hot-numbers" id="hot-numbers">
+                            <div class="loading">Ładowanie...</div>
+                        </div>
+                        <div class="card-footer">
+                            <small>Na podstawie analizy wszystkich losowań</small>
+                        </div>
+                    </div>
+
+                    <!-- Cold Numbers Section -->
+                    <div class="card cold-numbers-card">
+                        <div class="card-header">
+                            <h3>❄️ Najrzadziej losowane</h3>
+                            <span class="card-subtitle">Bottom 10 liczb</span>
+                        </div>
+                        <div class="cold-numbers" id="cold-numbers">
+                            <div class="loading">Ładowanie...</div>
+                        </div>
+                        <div class="card-footer">
+                            <small>Na podstawie analizy wszystkich losowań</small>
+                        </div>
+                    </div>
+
+                    <!-- Quick Stats Section -->
+                    <div class="card quick-stats-card">
+                        <div class="card-header">
+                            <h3>📋 Szybkie statystyki</h3>
+                        </div>
+                        <div class="quick-stats-grid" id="quick-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Średnia częstotliwość:</span>
+                                <span class="stat-value" id="avg-frequency">-</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Najwyższa częstotliwość:</span>
+                                <span class="stat-value" id="max-frequency">-</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Najniższa częstotliwość:</span>
+                                <span class="stat-value" id="min-frequency">-</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Zakres danych:</span>
+                                <span class="stat-value" id="data-range">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity Section -->
+                    <div class="card recent-activity-card">
+                        <div class="card-header">
+                            <h3>🕒 Ostatnia aktywność</h3>
+                        </div>
+                        <div class="activity-list" id="recent-activity">
+                            <div class="activity-item">
+                                <span class="activity-icon">📊</span>
+                                <span class="activity-text">Analiza danych zakończona</span>
+                                <span class="activity-time">Teraz</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics Tab -->
+            <div id="statistics" class="tab-content">
+                <!-- Statistics Header -->
+                <div class="statistics-header">
+                    <h2>📈 Analiza Statystyczna</h2>
+                    <p class="statistics-subtitle">Zaawansowana analiza częstotliwości i wzorców w losowaniach Lotto</p>
+                </div>
+
+                <!-- Statistics Controls -->
+                <div class="statistics-controls">
+                    <div class="control-group">
+                        <label for="period-select">Okres analizy:</label>
+                        <select id="period-select">
+                            <option value="all">Wszystkie losowania</option>
+                            <option value="year">Ostatni rok</option>
+                            <option value="quarter">Ostatnie 3 miesiące</option>
+                            <option value="month">Ostatni miesiąc</option>
+                            <option value="week">Ostatni tydzień</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="analysis-type">Typ analizy:</label>
+                        <select id="analysis-type">
+                            <option value="frequency">Częstotliwość</option>
+                            <option value="trends">Trendy</option>
+                            <option value="patterns">Wzorce</option>
+                            <option value="correlations">Korelacje</option>
+                        </select>
+                    </div>
+                    
+                    <button id="analyze-btn" class="btn btn-primary">
+                        🔍 Analizuj dane
+                    </button>
+                    
+                    <button id="export-stats-btn" class="btn btn-secondary">
+                        📊 Eksportuj raport
+                    </button>
+                </div>
+
+                <!-- Statistics Overview -->
+                <div class="statistics-overview">
+                    <div class="overview-card">
+                        <div class="overview-icon">📊</div>
+                        <div class="overview-content">
+                            <h4>Łączna liczba analizowanych losowań</h4>
+                            <div class="overview-value" id="total-analyzed">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card">
+                        <div class="overview-icon">🎯</div>
+                        <div class="overview-content">
+                            <h4>Najczęściej losowana liczba</h4>
+                            <div class="overview-value" id="most-frequent">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card">
+                        <div class="overview-icon">❄️</div>
+                        <div class="overview-content">
+                            <h4>Najrzadziej losowana liczba</h4>
+                            <div class="overview-value" id="least-frequent">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card">
+                        <div class="overview-icon">📈</div>
+                        <div class="overview-content">
+                            <h4>Średnia częstotliwość</h4>
+                            <div class="overview-value" id="avg-frequency-overview">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analysis Summary -->
+                <div class="card analysis-summary-card">
+                    <div class="card-header">
+                        <h3>📝 Podsumowanie analizy</h3>
+                    </div>
+                    <div class="analysis-summary" id="analysis-summary">
+                        <div class="summary-section">
+                            <h4>🔥 Gorące liczby (Top 5)</h4>
+                            <div class="hot-numbers-summary" id="hot-summary">
+                                <div class="loading">Ładowanie...</div>
+                            </div>
+                        </div>
+                        
+                        <div class="summary-section">
+                            <h4>❄️ Zimne liczby (Bottom 5)</h4>
+                            <div class="cold-numbers-summary" id="cold-summary">
+                                <div class="loading">Ładowanie...</div>
+                            </div>
+                        </div>
+                        
+                        <div class="summary-section">
+                            <h4>📊 Statystyki ogólne</h4>
+                            <div class="general-stats" id="general-stats">
+                                <div class="stat-row">
+                                    <span>Najwyższa częstotliwość:</span>
+                                    <span id="highest-freq">-</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span>Najniższa częstotliwość:</span>
+                                    <span id="lowest-freq">-</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span>Odchylenie standardowe:</span>
+                                    <span id="std-deviation">-</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span>Współczynnik zmienności:</span>
+                                    <span id="coefficient">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Content -->
+                <div class="statistics-content">
+                    <!-- Charts Section -->
+                    <div class="charts-section">
+                        <!-- Distribution Chart -->
+                        <div class="card chart-card distribution-chart-card">
+                            <div class="card-header">
+                                <h3>📊 Rozkład częstotliwości</h3>
+                                <div class="chart-controls">
+                                    <span class="card-subtitle">Wszystkie liczby 1-49</span>
+                                    <button class="chart-toggle-btn" data-chart="distribution">🔍 Szczegóły</button>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="distribution-chart"></canvas>
+                            </div>
+                            <div class="chart-info">
+                                <div class="chart-stats">
+                                    <span class="stat-item">Mediana: <strong id="median">-</strong></span>
+                                    <span class="stat-item">Moda: <strong id="mode">-</strong></span>
+                                    <span class="stat-item">Zakres: <strong id="range">-</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Data Tables Section -->
+                    <div class="tables-section">
+                        <!-- Frequency Table -->
+                        <div class="card table-card">
+                            <div class="card-header">
+                                <h3>📋 Szczegółowa tabela częstotliwości</h3>
+                                <div class="table-controls">
+                                    <input type="text" id="table-search" placeholder="🔍 Szukaj liczby..." class="search-input">
+                                    <select id="table-sort">
+                                        <option value="frequency">Sortuj po częstotliwości</option>
+                                        <option value="number">Sortuj po numerze</option>
+                                        <option value="percentage">Sortuj po procentach</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="table-container">
+                                <table id="statistics-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Liczba</th>
+                                            <th>Wystąpienia</th>
+                                            <th>Procent</th>
+                                            <th>Status</th>
+                                            <th>Trend</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td colspan="5" class="loading">Ładowanie danych...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="table-footer">
+                                <div class="table-info">
+                                    <span id="table-count">0</span> liczb wyświetlonych
+                                </div>
+                                <div class="table-pagination">
+                                    <button id="prev-page" class="btn btn-small">← Poprzednia</button>
+                                    <span id="page-info">Strona 1 z 1</span>
+                                    <button id="next-page" class="btn btn-small">Następna →</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generator Tab -->
+            <div id="generator" class="tab-content">
+                <div class="generator-section">
+                    <div class="card">
+                        <h3>🎯 Generator liczb</h3>
+                        <p class="disclaimer">
+                            ⚠️ <strong>Uwaga:</strong> To tylko narzędzie do zabawy! 
+                            Żadna metoda nie zwiększa szans na wygraną w grach losowych.
+                        </p>
+                        
+                        <div class="strategy-selection">
+                            <h4>Wybierz strategię:</h4>
+                            <div class="strategy-options">
+                                <label class="strategy-option">
+                                    <input type="radio" name="strategy" value="random" checked>
+                                    <span>🎲 Losowe liczby</span>
+                                    <small>Całkowicie przypadkowy wybór</small>
+                                </label>
+                                <label class="strategy-option">
+                                    <input type="radio" name="strategy" value="hot">
+                                    <span>🔥 Gorące liczby</span>
+                                    <small>Najczęściej losowane w historii</small>
+                                </label>
+                                <label class="strategy-option">
+                                    <input type="radio" name="strategy" value="cold">
+                                    <span>❄️ Zimne liczby</span>
+                                    <small>Najrzadziej losowane w historii</small>
+                                </label>
+                                <label class="strategy-option">
+                                    <input type="radio" name="strategy" value="balanced">
+                                    <span>⚖️ Zrównoważone</span>
+                                    <small>Liczby o średniej częstotliwości</small>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button id="generate-btn" class="btn btn-primary btn-large">
+                            🎯 Generuj liczby
+                        </button>
+
+                        <div id="generated-numbers" class="generated-result">
+                            <!-- Wygenerowane liczby będą wyświetlane tutaj -->
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>📝 Historia generowanych zestawów</h3>
+                        <div id="generation-history" class="generation-history">
+                            <p>Brak historii generowania</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Tab -->
+            <div id="data" class="tab-content">
+                <div class="data-header">
+                    <h2>📊 Zarządzanie danymi</h2>
+                    <p class="data-subtitle">Pobieranie i importowanie danych historycznych</p>
+                </div>
+                
+                <!-- Date Range Selection -->
+                <div class="date-range-section">
+                    <h3>📅 Pobieranie danych z zakresu dat</h3>
+                    <div class="date-range-controls">
+                        <div class="date-input-group">
+                            <label for="start-date">Data początkowa:</label>
+                            <input type="date" id="start-date" class="date-input">
+                        </div>
+                        <div class="date-input-group">
+                            <label for="end-date">Data końcowa:</label>
+                            <input type="date" id="end-date" class="date-input">
+                        </div>
+                        <button id="fetch-date-range-btn" class="btn btn-primary">🔍 Pobierz dane</button>
+                    </div>
+                    <div class="date-range-info">
+                        <p>💡 Wybierz zakres dat, z którego chcesz pobrać dane historyczne. Aplikacja automatycznie sprawdzi różne źródła.</p>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions-section">
+                    <h3>⚡ Szybkie akcje</h3>
+                    <div class="data-controls">
+                        <button id="import-csv-btn" class="btn btn-secondary">📁 Importuj CSV</button>
+                        <button id="fetch-data-btn" class="btn btn-secondary">🔄 Pobierz najnowsze dane</button>
+                        <button id="clear-data-btn" class="btn btn-danger">🗑️ Wyczyść dane</button>
+                    </div>
+                </div>
+
+                <!-- Data Status -->
+                <div class="data-status-section">
+                    <h3>📈 Status danych</h3>
+                    <div id="data-status" class="status-message"></div>
+                    <div id="data-summary" class="data-summary">
+                        <div class="summary-item">
+                            <span class="summary-label">Łączna liczba losowań:</span>
+                            <span id="total-draws" class="summary-value">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Zakres dat:</span>
+                            <span id="date-range" class="summary-value">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Ostatnia aktualizacja:</span>
+                            <span id="last-update" class="summary-value">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Tab -->
+            <div id="history" class="tab-content">
+                <!-- History Header -->
+                <div class="history-header">
+                    <h2>📋 Historia Losowań</h2>
+                    <p class="history-subtitle">Przeglądanie i analiza historycznych wyników Lotto</p>
+                </div>
+
+                <!-- History Controls -->
+                <div class="history-controls">
+                    <div class="control-group">
+                        <label for="history-period">Okres:</label>
+                        <select id="history-period">
+                            <option value="all">Wszystkie</option>
+                            <option value="recent">Ostatnie 50</option>
+                            <option value="month">Ostatni miesiąc</option>
+                            <option value="quarter">Ostatnie 3 miesiące</option>
+                            <option value="year">Ostatni rok</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="history-sort">Sortuj po:</label>
+                        <select id="history-sort">
+                            <option value="date-desc">Data (najnowsze)</option>
+                            <option value="date-asc">Data (najstarsze)</option>
+                            <option value="draw-desc">Numer losowania (malejąco)</option>
+                            <option value="draw-asc">Numer losowania (rosnąco)</option>
+                            <option value="jackpot-desc">Jackpot (malejąco)</option>
+                            <option value="jackpot-asc">Jackpot (rosnąco)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="history-search">Szukaj:</label>
+                        <input type="text" id="history-search" placeholder="🔍 Numer, data, liczby..." class="search-input">
+                    </div>
+                    
+                    <button id="load-history-btn" class="btn btn-primary">
+                        📋 Załaduj historię
+                    </button>
+                    
+                    <button id="export-history-btn" class="btn btn-secondary">
+                        📊 Eksportuj dane
+                    </button>
+                </div>
+
+                <!-- History Overview -->
+                <div class="history-overview">
+                    <div class="overview-card">
+                        <div class="overview-icon">📅</div>
+                        <div class="overview-content">
+                            <h4>Zakres dat</h4>
+                            <div class="overview-value" id="date-range">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card">
+                        <div class="overview-icon">🎯</div>
+                        <div class="overview-content">
+                            <h4>Liczba losowań</h4>
+                            <div class="overview-value" id="total-draws-history">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card">
+                        <div class="overview-icon">💰</div>
+                        <div class="overview-content">
+                            <h4>Najwyższy jackpot</h4>
+                            <div class="overview-value" id="max-jackpot">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="overview-card">
+                        <div class="overview-icon">👥</div>
+                        <div class="overview-content">
+                            <h4>Średnia liczba zwycięzców</h4>
+                            <div class="overview-value" id="avg-winners">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History Content -->
+                <div class="history-content">
+                    <!-- History Table -->
+                    <div class="card history-table-card">
+                        <div class="card-header">
+                            <h3>📋 Lista losowań</h3>
+                            <div class="table-controls">
+                                <div class="view-toggle">
+                                    <button class="view-btn active" data-view="table">📋 Tabela</button>
+                                    <button class="view-btn" data-view="cards">🃏 Karty</button>
+                                </div>
+                                <div class="table-actions">
+                                    <button id="select-all-btn" class="btn btn-small">☑️ Zaznacz wszystkie</button>
+                                    <button id="clear-selection-btn" class="btn btn-small">❌ Wyczyść zaznaczenie</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Table View -->
+                        <div class="table-view" id="table-view">
+                            <div class="table-container">
+                                <table id="history-table">
+                                    <thead>
+                                        <tr>
+                                            <th><input type="checkbox" id="select-all-checkbox"></th>
+                                            <th>Data</th>
+                                            <th>Numer losowania</th>
+                                            <th>Wylosowane liczby</th>
+                                            <th>Plus</th>
+                                            <th>Jackpot</th>
+                                            <th>Zwycięzcy</th>
+                                            <th>Akcje</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td colspan="8" class="loading">Ładowanie danych...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Cards View -->
+                        <div class="cards-view" id="cards-view" style="display: none;">
+                            <div class="draw-cards-grid" id="draw-cards-grid">
+                                <div class="loading">Ładowanie danych...</div>
+                            </div>
+                        </div>
+                        
+                        <div class="table-footer">
+                            <div class="table-info">
+                                <span id="history-count">0</span> losowań wyświetlonych
+                                <span id="selected-count" class="selected-info">(0 zaznaczonych)</span>
+                            </div>
+                            <div class="table-pagination">
+                                <button id="history-prev-page" class="btn btn-small">← Poprzednia</button>
+                                <span id="history-page-info">Strona 1 z 1</span>
+                                <button id="history-next-page" class="btn btn-small">Następna →</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- History Details -->
+                    <div class="card history-details-card">
+                        <div class="card-header">
+                            <h3>📊 Szczegóły wybranego losowania</h3>
+                        </div>
+                        <div class="draw-details" id="draw-details">
+                            <div class="no-selection">
+                                <p>Wybierz losowanie z tabeli aby zobaczyć szczegóły</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- History Analytics -->
+                    <div class="card history-analytics-card">
+                        <div class="card-header">
+                            <h3>📈 Analiza historyczna</h3>
+                        </div>
+                        <div class="history-analytics" id="history-analytics">
+                            <div class="analytics-section">
+                                <h4>💰 Jackpoty</h4>
+                                <div class="jackpot-stats" id="jackpot-stats">
+                                    <div class="stat-item">
+                                        <span>Najwyższy:</span>
+                                        <span id="highest-jackpot">-</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span>Najniższy:</span>
+                                        <span id="lowest-jackpot">-</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span>Średni:</span>
+                                        <span id="avg-jackpot">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="analytics-section">
+                                <h4>👥 Zwycięzcy</h4>
+                                <div class="winners-stats" id="winners-stats">
+                                    <div class="stat-item">
+                                        <span>Najwięcej zwycięzców:</span>
+                                        <span id="max-winners">-</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span>Średnia liczba:</span>
+                                        <span id="avg-winners-detail">-</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span>Losowań bez zwycięzców:</span>
+                                        <span id="no-winners">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="analytics-section">
+                                <h4>📅 Częstotliwość</h4>
+                                <div class="frequency-stats" id="frequency-stats">
+                                    <div class="stat-item">
+                                        <span>Losowania tygodniowo:</span>
+                                        <span id="weekly-draws">-</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span>Średni odstęp (dni):</span>
+                                        <span id="avg-interval">-</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span>Najdłuższy odstęp:</span>
+                                        <span id="max-interval">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-info">
+                <span id="status">Gotowy</span>
+            </div>
+            <div class="status-actions">
+                <span id="last-update-time">Brak danych</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Ładowanie danych...</p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
