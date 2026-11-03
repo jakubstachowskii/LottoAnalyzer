@@ -1,165 +1,66 @@
-# Lotto Analyzer 🎲
+# Lotto Analyzer
 
-Aplikacja desktopowa do analizy wyników polskiego Lotto, stworzona w Electron + JavaScript.
+Aplikacja desktopowa do przeglądania i analizy wyników polskiego Lotto: statystyki częstości liczb, historia losowań, import danych z CSV i pobieranie najnowszych wyników.
 
-## ⚠️ Ważne zastrzeżenie
+> **Projekt edukacyjny.** Żadna analiza ani „strategia” nie zwiększa szans na wygraną: w Lotto każda kombinacja liczb ma takie same szanse.
 
-**Ta aplikacja służy wyłącznie celom edukacyjnym i rozrywkowym!** 
+![Panel główny](docs/screenshots/panel-glowny.webp)
 
-Żadne algorytmy, analizy ani "strategie" nie mogą zwiększyć szans na wygraną w grach losowych. Lotto to gra całkowicie przypadkowa - każda kombinacja liczb ma dokładnie takie same szanse na wylosowanie.
+## Co robi
 
-## 🚀 Funkcjonalności
+- **Panel główny:** liczba losowań, ostatnie losowanie (liczby, Plus, jackpot), najczęściej losowane liczby.
+- **Statystyki:** częstość wystąpień każdej liczby, liczby „gorące” i „zimne”.
+- **Generator:** cztery tryby dla zabawy: losowe, gorące, zimne i zrównoważone liczby.
+- **Historia:** lista zapisanych losowań.
+- **Dane:** import z pliku CSV i pobieranie najnowszych wyników z sieci, także z wybranego zakresu dat.
 
-- 📊 **Dashboard** - podsumowanie statistyk i ostatnie wyniki
-- 📈 **Statystyki** - analiza częstotliwości wystąpień liczb
-- 🎯 **Generator** - różne "strategie" generowania liczb (dla zabawy!)
-- 📋 **Historia** - przeglądanie historycznych losowań
-- 🔄 **Auto-update** - pobieranie najnowszych wyników z lotto.pl
-- 📁 **Import CSV** - import danych historycznych
-- 🗄️ **SQLite** - lokalna baza danych
+![Generator liczb](docs/screenshots/generator.webp)
 
-## 🛠️ Instalacja
+## Technologie
 
-### Wymagania
-- Node.js (wersja 16 lub nowsza)
-- npm lub yarn
+- Electron (proces główny, komunikacja IPC przez preload)
+- JavaScript, HTML i CSS bez frameworka (interfejs)
+- Dane w lokalnym pliku JSON (`data/lotto-data.json`)
 
-### Kroki instalacji
+## Uruchomienie
 
-1. **Sklonuj lub pobierz pliki:**
-```bash
-# Utwórz folder projektu
-mkdir lotto-analyzer
-cd lotto-analyzer
-```
+Wymagania: Node.js 16+ i npm.
 
-2. **Skopiuj wszystkie pliki do odpowiedniej struktury:**
-```
-lotto-analyzer/
-├── package.json
-├── README.md
-├── src/
-│   ├── main.js
-│   ├── preload.js
-│   ├── database.js
-│   ├── scraper.js
-│   └── renderer/
-│       ├── index.html
-│       ├── styles.css
-│       └── app.js
-├── data/           # Zostanie utworzony automatycznie
-└── assets/         # Opcjonalne ikony
-```
-
-3. **Zainstaluj dependencies:**
 ```bash
 npm install
+npm start          # uruchomienie aplikacji
+npm run dev        # z narzędziami deweloperskimi
 ```
 
-4. **Uruchom aplikację:**
+### Budowanie
+
 ```bash
-npm start
+npm run build      # instalator (electron-builder)
+npm run pack       # tylko spakowana aplikacja, bez instalatora
 ```
 
-### Pierwsze uruchomienie
+Pliki trafiają do folderu `dist/`.
 
-Przy pierwszym uruchomieniu aplikacja:
-1. Utworzy lokalną bazę danych SQLite w folderze `data/`
-2. Spróbuje pobrać najnowsze wyniki z lotto.pl
-3. Jeśli scraping nie zadziała, użyje danych testowych
+## Import CSV
 
-## 📖 Instrukcja użytkowania
+Jeden wiersz = jedno losowanie:
 
-### Dashboard
-- Przegląd podstawowych statystyk
-- Ostatnie wylosowane liczby
-- "Gorące" i "zimne" liczby
-- Wykres częstotliwości
-
-### Statystyki
-- Tabela wszystkich liczb z częstotliwością wystąpień
-- Filtrowanie po okresach (tydzień, miesiąc, rok)
-- Wykresy rozkładu
-
-### Generator liczb
-Dostępne "strategie" (pamiętaj - to tylko zabawa!):
-- **🎲 Losowe** - całkowicie przypadkowe
-- **🔥 Gorące** - najczęściej losowane w historii
-- **❄️ Zimne** - najrzadziej losowane w historii
-- **⚖️ Zrównoważone** - liczby o średniej częstotliwości
-
-### Historia
-- Przeglądanie wszystkich zapisanych losowań
-- Możliwość ustawienia liczby wyświetlanych rekordów
-- Informacje o jackpotach i liczbie zwycięzców
-
-## 🔧 Zaawansowane użytkowanie
-
-### Import danych CSV
-Możesz zaimportować dane historyczne w formacie CSV. Struktura pliku:
 ```csv
 data,numer_losowania,liczba_1,liczba_2,liczba_3,liczba_4,liczba_5,liczba_6,plus,jackpot
 2024-01-15,1,5,12,23,34,41,49,7,5000000
 ```
 
-### Pobieranie danych
-Aplikacja automatycznie próbuje pobrać najnowsze dane z oficjalnej strony lotto.pl. W przypadku problemów ze scrapingiem, używa danych testowych.
+## Struktura
 
-### Baza danych
-Dane są przechowywane lokalnie w SQLite (`data/lotto.db`). Możesz:
-- Backupować plik bazy danych
-- Analizować dane zewnętrznymi narzędziami
-- Resetować bazę przez usunięcie pliku
-
-## 🏗️ Budowanie aplikacji
-
-### Development
-```bash
-npm run dev  # Uruchom z narzędziami deweloperskimi
+```
+src/main-simple.js     – proces główny: dane, statystyki, generator, import, pobieranie
+src/preload-simple.js  – bezpieczny most między procesem głównym a interfejsem
+src/renderer/          – interfejs (index.html, app.js, styles.css)
+data/lotto-data.json   – zapisane losowania
 ```
 
-### Budowanie plików wykonywalnych
-```bash
-npm run build  # Buduj dla wszystkich platform
-npm run pack   # Tylko spakuj (bez instalatora)
-```
+`src/main.js`, `src/database.js` i `src/scraper.js` to wcześniejsza wersja z bazą SQLite; aplikacja obecnie z niej nie korzysta.
 
-Pliki wykonywalne znajdziesz w folderze `dist/`.
+---
 
-## 🧪 Rozwój i customizacja
-
-### Struktura projektu
-- `src/main.js` - główny proces Electron
-- `src/database.js` - obsługa SQLite
-- `src/scraper.js` - pobieranie danych z sieci
-- `src/preload.js` - bridge security
-- `src/renderer/` - interfejs użytkownika
-
-### Dodawanie nowych funkcji
-1. **Nowe analizy** - rozszerz `database.js`
-2. **Inne źródła danych** - modyfikuj `scraper.js`
-3. **UI zmiany** - edytuj pliki w `renderer/`
-
-### Testowanie scrapera
-Scraper może wymagać dostosowania do zmian na stronie lotto.pl:
-```javascript
-// W scraper.js - dostosuj selektory CSS
-$('.results-table tbody tr')  // Może wymagać aktualizacji
-```
-
-## 🐛 Rozwiązywanie problemów
-
-### Aplikacja nie startuje
-```bash
-# Sprawdź wersję Node.js
-node --version  # Powinno być >= 16
-
-# Przeinstaluj dependencies
-rm -rf node_modules package-lock.json
-npm install
-```
-
-### Błędy bazy danych
-```bash
-# Usuń i pozwól aplikacji odtworzyć bazę
-rm
+Więcej o projekcie: [portfolio](https://portfolio-jakubstachowskii.vercel.app/projekty/lotto-analyzer/)
